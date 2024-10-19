@@ -1,5 +1,6 @@
 package com.duartecelo.crud_msk.controller;
 
+import com.duartecelo.crud_msk.kafka.KafkaProducer;
 import com.duartecelo.crud_msk.model.Product;
 import com.duartecelo.crud_msk.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,9 @@ public class ProductController {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private KafkaProducer kafkaProducer;
+
     @GetMapping
     public ResponseEntity<List<Product>> getAll() {
         List<Product> list = productRepository.findAll();
@@ -29,6 +33,7 @@ public class ProductController {
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest().path("/{id}")
                 .buildAndExpand(product.getId()).toUri();
+        kafkaProducer.sendMessage("Product created: " + product.getName());
         return ResponseEntity.created(uri).body(product);
     }
 
